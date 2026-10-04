@@ -1,0 +1,8 @@
+node_modules/
+dist/
+pipeline/.venv/
+pipeline/build/
+pipeline/logs/
+pipeline/__pycache__/
+.DS_Store
+*.tsbuildinfo

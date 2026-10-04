@@ -1,0 +1,57 @@
+{
+ "payload": {
+  "operation": "fillet_rsolid",
+  "what_happened": "radius 12 mm meets or exceeds the 4 mm of face room between the failing edge and the opposite boundary of an adjacent face",
+  "possible_causes": [
+   "The fillet radius is larger than the adjacent face can carry.",
+   "The selected edge runs along a narrow face."
+  ],
+  "how_to_fix": [
+   "Use a positive fillet radius.",
+   "Select at least one valid edge or use a selector that resolves to edges.",
+   "If the kernel rejects the fillet, try a smaller radius or a simpler edge set."
+  ],
+  "technical_details": "ValueError: Fillet failed: OCC build did not complete",
+  "signature": "fillet_rsolid(solid: 'Solid', edges: 'Union[Sequence[Edge], ShapeSelector]', radius: 'ScalarLike', *, result_tag: 'Optional[str]' = None, generated_faces_tag: 'Optional[str]' = None) -> 'Solid'",
+  "documentation_hint": "For full usage details, run help(simplecadapi.fillet_rsolid).",
+  "measurements": [
+   {
+    "name": "radius",
+    "value": 12.0,
+    "unit": "mm"
+   },
+   {
+    "name": "available_face_room",
+    "value": 4.0,
+    "unit": "mm"
+   },
+   {
+    "name": "edge_start",
+    "value": [
+     -5.0,
+     -2.0,
+     4.0
+    ],
+    "unit": "mm"
+   },
+   {
+    "name": "edge_end",
+    "value": [
+     -5.0,
+     -2.0,
+     0.0
+    ],
+    "unit": "mm"
+   }
+  ],
+  "evidence": [],
+  "repair": [
+   "Reduce the radius to below 4 mm (e.g. 3.8) and retry.",
+   "Or select a different edge with more room on its adjacent faces."
+  ],
+  "inventory": []
+ },
+ "text": "Operation: fillet_rsolid\nSignature: fillet_rsolid(solid: 'Solid', edges: 'Union[Sequence[Edge], ShapeSelector]', radius: 'ScalarLike', *, result_tag: 'Optional[str]' = None, generated_faces_tag: 'Optional[str]' = None) -> 'Solid'\nDocumentation: For full usage details, run help(simplecadapi.fillet_rsolid).\nWhat happened: radius 12 mm meets or exceeds the 4 mm of face room between the failing edge and the opposite boundary of an adjacent face\nMeasurements:\n- radius: 12 mm\n- available_face_room: 4 mm\n- edge_start: (-5, -2, 4) mm\n- edge_end: (-5, -2, 0) mm\nPossible causes:\n- The fillet radius is larger than the adjacent face can carry.\n- The selected edge runs along a narrow face.\nHow to fix:\n- Reduce the radius to below 4 mm (e.g. 3.8) and retry.\n- Or select a different edge with more room on its adjacent faces.\n- Use a positive fillet radius.\n- Select at least one valid edge or use a selector that resolves to edges.\n- If the kernel rejects the fillet, try a smaller radius or a simpler edge set.\nTechnical details: ValueError: Fillet failed: OCC build did not complete",
+ "badRadius": 12.0,
+ "goodRadius": 3.8
+}
