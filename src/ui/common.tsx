@@ -149,5 +149,52 @@ export const Install: React.FC<{ command: string }> = ({ command }) => {
   );
 };
 
+/** Copy text on a page that may not allow the async clipboard (plain http, old browsers). */
+const copyText = async (text: string): Promise<boolean> => {
+  try {
+    if (navigator.clipboard?.writeText) {
+      await navigator.clipboard.writeText(text);
+      return true;
+    }
+  } catch {
+    /* fall through to the selection-based copy */
+  }
+  const area = document.createElement('textarea');
+  area.value = text;
+  area.setAttribute('readonly', '');
+  area.style.position = 'fixed';
+  area.style.opacity = '0';
+  document.body.appendChild(area);
+  area.select();
+  let ok = false;
+  try {
+    ok = document.execCommand('copy');
+  } catch {
+    ok = false;
+  }
+  area.remove();
+  return ok;
+};
+
+/** The line a visitor pastes to their agent: large, selectable, one click to copy. */
+export const PromptCopy: React.FC<{ prompt: string; label: string }> = ({ prompt, label }) => {
+  const [state, setState] = useState<'idle' | 'copied' | 'failed'>('idle');
+  const copy = async () => {
+    setState((await copyText(prompt)) ? 'copied' : 'failed');
+    window.setTimeout(() => setState('idle'), 1800);
+  };
+  return (
+    <div className={`prompt-box ${state === 'copied' ? 'is-copied' : ''}`}>
+      <div className="prompt-label">{label}</div>
+      <div className="prompt-row">
+        <code className="prompt-text">{prompt}</code>
+        <button type="button" className="prompt-copy" onClick={copy} aria-label={`Copy "${prompt}"`}>
+          {state === 'copied' ? 'copied' : state === 'failed' ? 'press ctrl+c' : 'copy'}
+        </button>
+      </div>
+    </div>
+  );
+};
+
 export const fmt = (v: number, digits = 0) =>
   v.toLocaleString('en-US', { minimumFractionDigits: digits, maximumFractionDigits: digits });

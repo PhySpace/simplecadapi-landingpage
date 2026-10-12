@@ -323,6 +323,61 @@ main {
   align-items: stretch;
 }
 
+/* The line to paste to an agent: the first thing a visitor should notice. */
+.prompt-box {
+  margin: 24px 0 18px;
+  max-width: 640px;
+  border: var(--rule) solid var(--focus);
+  background: var(--black);
+}
+
+.prompt-label {
+  padding: 4px 12px;
+  background: var(--focus);
+  color: var(--black);
+  font-size: var(--small);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.prompt-row {
+  display: flex;
+  align-items: stretch;
+  gap: 0;
+}
+
+.prompt-text {
+  flex: 1;
+  min-width: 0;
+  padding: 14px 14px;
+  color: var(--white);
+  font: inherit;
+  font-size: 15px;
+  line-height: 1.45;
+  overflow-wrap: anywhere;
+  user-select: all;
+}
+
+.prompt-copy {
+  flex: none;
+  min-width: 96px;
+  border: 0;
+  border-left: var(--rule) solid var(--focus);
+  background: var(--black);
+  color: var(--focus);
+  font: inherit;
+  font-size: var(--small);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+
+.prompt-copy:hover,
+.prompt-box.is-copied .prompt-copy {
+  background: var(--focus);
+  color: var(--black);
+}
+
 .install {
   display: inline-flex;
   align-items: center;
@@ -733,12 +788,36 @@ main {
     order: -1;
   }
 
+  /* The hero leads with the line to paste; its model card follows. */
+  .hero .grid .viewport {
+    order: 1;
+  }
+
   .vp-body {
     height: 34vh;
   }
 
   .copy {
     gap: 12px;
+  }
+
+  .prompt-box {
+    margin: 12px 0 8px;
+  }
+
+  .prompt-row {
+    flex-direction: column;
+  }
+
+  .prompt-text {
+    font-size: 14px;
+    padding: 12px;
+  }
+
+  .prompt-copy {
+    min-height: 40px;
+    border-left: 0;
+    border-top: var(--rule) solid var(--focus);
   }
 
   .copy .body {
