@@ -1,0 +1,14 @@
+# SimpleCADAPI
+
+> An OCP-native Python CAD SDK for agents. A model is a marimo notebook (plain Python, one feature per cell, every dimension a named parameter); geometry is selected by what it is, not by an id; every operation reports why it worked or failed, in numbers. One package feeds STEP AP242, FreeCAD, MJCF and downstream solvers.
+
+## Start here
+
+- [Agent landing script](https://physpace.dev/sca/landing.md): read this and follow it to install the SDK, install the skill for yourself, and open an example in the code-first editor
+- [Repository](https://github.com/PhySpace/SimpleCADAPI): source, examples and the agent skill (docs/skill)
+- [PyPI](https://pypi.org/project/simplecadapi/): `pip install simplecadapi`
+- [Documentation](https://github.com/PhySpace/SimpleCADAPI/tree/master/docs)
+
+## Paper
+
+- [CADIR: A Cross-Backend Editable Intermediate Representation for Agentic CAD Generation](https://arxiv.org/abs/2608.00891)
