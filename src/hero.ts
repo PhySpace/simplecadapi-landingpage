@@ -18,14 +18,17 @@ export interface LoopInfo {
   height: number;
   bytes: number;
 }
-export type HeroProduct = ShowcaseProduct & LoopInfo;
+/** the fields of a showcase product the hero's chips and label read */
+export type HeroLabel = Pick<ShowcaseProduct, 'key' | 'title' | 'notebook' | 'kind' | 'parts'>;
+/** what hero/index.json keeps of a product: its label and its loop */
+export type HeroProduct = HeroLabel & LoopInfo;
 interface HeroIndex {
   products: HeroProduct[];
 }
 
 export const showcase = {
   index: 0,
-  products: [] as ShowcaseProduct[],
+  products: [] as HeroLabel[],
   /** products that can be shown (their loop is downloaded) */
   loaded: new Set<number>(),
   /** the still frame of the first product is ready */

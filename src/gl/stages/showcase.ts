@@ -36,6 +36,8 @@ interface Shown {
 /** 00: finished products from the examples, one after another, dissolving through each other */
 export class ShowcaseStage extends Stage {
   readonly id = 'hero' as const;
+  /** the full products (meshes' instances and bounds); the store only keeps what the hero's labels read */
+  private products: ShowcaseProduct[] = [];
   private shown: (Shown | null)[] = [];
   /** products still to load, smallest first: the rest of the rotation fills in behind the first */
   private queue: number[] = [];
@@ -50,6 +52,7 @@ export class ShowcaseStage extends Stage {
 
   protected async setup() {
     const idx = await loadJson<ShowcaseIndex>('geometry/showcase/index.json', 'high');
+    this.products = idx.products;
     showcase.products = idx.products;
     this.shown = idx.products.map(() => null);
     // the first product alone, at high priority: it is what the visitor is looking at
@@ -74,7 +77,7 @@ export class ShowcaseStage extends Stage {
   }
 
   private async build(i: number, priority: Priority) {
-    const p = showcase.products[i];
+    const p = this.products[i];
     const names = [...new Set(p.instances.map((x) => x.asset))];
     const assets = new Map(await Promise.all(names.map(async (n) => [n, await loadCad(`showcase/${p.key}/${n}`, priority)] as const)));
     const group = new THREE.Group();
@@ -122,7 +125,7 @@ export class ShowcaseStage extends Stage {
   }
 
   private hold() {
-    return showcase.products[this.current]?.kind === 'assembly' ? HOLD_ASSEMBLY : HOLD;
+    return this.products[this.current]?.kind === 'assembly' ? HOLD_ASSEMBLY : HOLD;
   }
 
   private updateCapture(f: FrameInput, index: number, t: number) {
@@ -183,7 +186,7 @@ export class ShowcaseStage extends Stage {
       else {
         if (this.current !== this.next) {
           this.current = this.next;
-          this.frameProduct(showcase.products[this.current]);
+          this.frameProduct(this.products[this.current]);
           showcase.index = this.current;
           showcase.emit();
         }

@@ -110,7 +110,7 @@ export async function runCapture() {
     const gif = encoder.bytes();
     await save(`${p.key}.gif`, new Blob([gif.slice().buffer]));
     await save(`${p.key}.poster.gif`, new Blob([poster!.slice().buffer]));
-    out.push({ ...p, poster: `${p.key}.poster.gif`, gif: `${p.key}.gif`, seconds, width: sw, height: sh, bytes: gif.length });
+    out.push({ key: p.key, title: p.title, notebook: p.notebook, kind: p.kind, parts: p.parts, poster: `${p.key}.poster.gif`, gif: `${p.key}.gif`, seconds, width: sw, height: sh, bytes: gif.length });
     log(`${p.key}: ${count} frames, ${gif.length} B loop, ${poster!.length} B still, palette ${palette!.length}`);
   }
   await save('index.json', JSON.stringify({ fps: FPS, loops: { part: LOOP_PART, assembly: LOOP_ASSEMBLY }, products: out }, null, 2));
