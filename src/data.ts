@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { fetchJson } from './gl/cad';
+import { fetchJson, type Priority } from './net';
 
 /** pipeline/export_flange.py index */
 export interface FlangeIndex {
@@ -67,10 +67,10 @@ export interface FilletError {
 }
 
 const cache = new Map<string, Promise<unknown>>();
-export const loadJson = <T,>(path: string): Promise<T> => {
+export const loadJson = <T,>(path: string, priority: Priority = 'auto'): Promise<T> => {
   let p = cache.get(path);
   if (!p) {
-    p = fetchJson<T>(path);
+    p = fetchJson<T>(path, priority);
     cache.set(path, p);
   }
   return p as Promise<T>;

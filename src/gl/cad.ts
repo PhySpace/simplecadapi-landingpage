@@ -1,8 +1,10 @@
 import * as THREE from 'three/webgpu';
 import { LineSegmentsGeometry } from 'three/addons/lines/LineSegmentsGeometry.js';
 
-/** Asset base: everything under public/ */
-export const asset = (path: string) => `${import.meta.env.BASE_URL}${path}`;
+import { asset, fetchBuffer, fetchJson, type Priority } from '../net';
+
+export { asset, fetchBuffer, fetchJson };
+export type { Priority };
 
 type BufType = 'f32' | 'u32' | 'u16' | 'i16' | 'i8' | 'u8';
 
@@ -106,25 +108,16 @@ const build = (key: string, doc: CadDoc, buf: ArrayBuffer): CadAsset => {
   return { key, doc, mesh, lines, centroids };
 };
 
-const fetchOk = async (url: string) => {
-  const r = await fetch(url);
-  if (!r.ok) throw new Error(`${url}: ${r.status}`);
-  return r;
-};
-
-export const fetchJson = async <T,>(path: string): Promise<T> => (await fetchOk(asset(path))).json() as Promise<T>;
-export const fetchBuffer = async (path: string) => (await fetchOk(asset(path))).arrayBuffer();
-
 const cache = new Map<string, Promise<CadAsset>>();
 
-/** Load geometry/<path>.json + its blob, once. */
-export const loadCad = (path: string): Promise<CadAsset> => {
+/** Load geometry/<path>.json + its blob, once (the first caller's priority applies). */
+export const loadCad = (path: string, priority: Priority = 'auto'): Promise<CadAsset> => {
   let p = cache.get(path);
   if (!p) {
     p = (async () => {
-      const doc = await fetchJson<CadDoc>(`geometry/${path}.json`);
+      const doc = await fetchJson<CadDoc>(`geometry/${path}.json`, priority);
       const dir = path.split('/').slice(0, -1).join('/');
-      const buf = await fetchBuffer(`geometry/${dir}/${doc.bin}`);
+      const buf = await fetchBuffer(`geometry/${dir}/${doc.bin}`, priority);
       return build(path, doc, buf);
     })();
     cache.set(path, p);

@@ -1,0 +1,100 @@
+{
+  "fps": 15,
+  "loops": {
+    "part": 9,
+    "assembly": 6.4
+  },
+  "products": [
+    {
+      "key": "flange_plate",
+      "title": "Flange plate",
+      "notebook": "examples/flange_plate/flange_plate.py",
+      "kind": "part",
+      "parts": 1,
+      "poster": "flange_plate.poster.gif",
+      "gif": "flange_plate.gif",
+      "seconds": 9,
+      "width": 279,
+      "height": 232,
+      "bytes": 142209
+    },
+    {
+      "key": "u_link_motor_mount",
+      "title": "U-link motor mount",
+      "notebook": "examples/u_link_motor_mount/u_link_motor_mount.py",
+      "kind": "assembly",
+      "parts": 2,
+      "poster": "u_link_motor_mount.poster.gif",
+      "gif": "u_link_motor_mount.gif",
+      "seconds": 6.4,
+      "width": 279,
+      "height": 232,
+      "bytes": 112573
+    },
+    {
+      "key": "l_link_motor_mount",
+      "title": "L-link motor mount",
+      "notebook": "examples/l_link_motor_mount/l_link_motor_mount.py",
+      "kind": "assembly",
+      "parts": 3,
+      "poster": "l_link_motor_mount.poster.gif",
+      "gif": "l_link_motor_mount.gif",
+      "seconds": 6.4,
+      "width": 279,
+      "height": 232,
+      "bytes": 120092
+    },
+    {
+      "key": "planetary_reducer",
+      "title": "Two-stage planetary reducer",
+      "notebook": "examples/compact_two_stage_planetary_reducer/compact_two_stage_planetary_reducer.py",
+      "kind": "assembly",
+      "parts": 106,
+      "poster": "planetary_reducer.poster.gif",
+      "gif": "planetary_reducer.gif",
+      "seconds": 6.4,
+      "width": 279,
+      "height": 232,
+      "bytes": 122478
+    },
+    {
+      "key": "hydraulic_rod",
+      "title": "Hydraulic rod assembly",
+      "notebook": "examples/hydraulic_rod_assembly/hydraulic_rod_assembly.py",
+      "kind": "assembly",
+      "parts": 2,
+      "poster": "hydraulic_rod.poster.gif",
+      "gif": "hydraulic_rod.gif",
+      "seconds": 6.4,
+      "width": 279,
+      "height": 232,
+      "bytes": 80985
+    },
+    {
+      "key": "arc_handle",
+      "title": "Arched handle",
+      "notebook": "examples/arc_handle/arc_handle.py",
+      "kind": "part",
+      "parts": 1,
+      "poster": "arc_handle.poster.gif",
+      "gif": "arc_handle.gif",
+      "seconds": 9,
+      "width": 279,
+      "height": 232,
+      "bytes": 187874
+    },
+    {
+      "key": "caplcd_enclosure",
+      "title": "LCD enclosure",
+      "notebook": "examples/caplcd_enclosure/caplcd_enclosure.py",
+      "kind": "part",
+      "parts": 1,
+      "poster": "caplcd_enclosure.poster.gif",
+      "gif": "caplcd_enclosure.gif",
+      "seconds": 9,
+      "width": 279,
+      "height": 232,
+      "bytes": 261088
+    }
+  ]
+}

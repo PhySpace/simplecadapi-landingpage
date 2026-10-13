@@ -4,13 +4,7 @@ import { CadObject } from '../CadObject';
 import { FemSurface, makeFemSurface } from '../materials';
 import { FrameInput, Stage } from '../Stage';
 import { FieldIndex, loadJson } from '../../data';
-import { simDeform, simField } from '../../timelines';
-
-/** displacement scale: ~6 mm of visible sag at full exaggeration (also the page readout) */
-export const exaggeration = (p: number, dispMax: number) => (simDeform(p) * 6) / dispMax;
-
-/** the interface tags the load case reads */
-export const LOAD_CASE_TAGS = ['interface.fixed_support', 'interface.load_surface'];
+import { LOAD_CASE_TAGS, exaggeration, simDeform, simField } from '../../timelines';
 
 /**
  * 06: the L-bracket. First the BRep with the tagged boundary faces; then the CalculiX

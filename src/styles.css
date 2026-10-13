@@ -247,6 +247,28 @@ main {
   height: min(52vh, 500px);
 }
 
+.hero-loop {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  image-rendering: pixelated;
+  animation: hero-in 0.4s steps(4) both;
+}
+
+@keyframes hero-in {
+  from {
+    opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hero-loop {
+    animation: none;
+  }
+}
+
 .vp-mark {
   position: absolute;
   width: 12px;

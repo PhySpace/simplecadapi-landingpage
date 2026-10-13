@@ -35,3 +35,9 @@ export const simDeform = (p: number) => smooth(p, 0.52, 0.9);
 export const crankAngle = (p: number) => p * Math.PI * 4;
 export const COMPOSE_LINKS = ['ground_span', 'crank', 'coupler', 'rocker'] as const;
 export const composeActive = (p: number) => Math.min(3, Math.floor(ramp(p, 0.02, 0.9) * 4));
+
+/** displacement scale: ~6 mm of visible sag at full exaggeration (also the page readout) */
+export const exaggeration = (p: number, dispMax: number) => (simDeform(p) * 6) / dispMax;
+
+/** the interface tags the load case reads */
+export const LOAD_CASE_TAGS = ['interface.fixed_support', 'interface.load_surface'];

@@ -1,11 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { Engine, EngineStatus } from './gl/Engine';
-import { AssemblyStage } from './gl/stages/assembly';
-import { ComposeStage } from './gl/stages/compose';
-import { CodeStage, ParamsStage, SelectStage } from './gl/stages/flange';
-import { ShowcaseStage } from './gl/stages/showcase';
-import { SimStage } from './gl/stages/sim';
-import { VerifyStage } from './gl/stages/verify';
+import type { Engine, EngineStatus } from './gl/Engine';
+import { heroSettled } from './hero';
 import {
   AssemblyChapter,
   Close,
@@ -19,17 +14,6 @@ import {
 } from './ui/chapters';
 import { Header } from './ui/Header';
 import { Footer, startDomLoop } from './ui/Footer';
-
-const stages = () => [
-  new ShowcaseStage(),
-  new CodeStage(),
-  new SelectStage(),
-  new VerifyStage(),
-  new ParamsStage(),
-  new AssemblyStage(),
-  new SimStage(),
-  new ComposeStage(),
-];
 
 export const App: React.FC = () => {
   const host = useRef<HTMLDivElement>(null);
@@ -49,31 +33,46 @@ export const App: React.FC = () => {
   }, []);
 
   useEffect(() => {
-    if (new URLSearchParams(location.search).has('nogl')) {
+    const query = new URLSearchParams(location.search);
+    if (import.meta.env.DEV && query.has('capture')) {
+      // dev only: make the hero's loops (see src/capture.ts); no page engine
+      void import('./capture').then(({ runCapture }) => runCapture()).catch((err) => console.error('capture failed', err));
+      return;
+    }
+    if (query.has('nogl')) {
       setStatus('failed');
       return startDomLoop();
     }
-    // a fresh canvas per engine: StrictMode mounts twice, and a GPU context cannot be re-owned
-    const canvas = document.createElement('canvas');
-    canvas.className = 'gl';
-    host.current!.appendChild(canvas);
-    const engine = new Engine(stages);
+    // the 3D engine (and three.js with it) loads after the hero's first picture is on screen
     let live = true;
+    let engine: Engine | null = null;
+    let canvas: HTMLCanvasElement | null = null;
     let stopDom: (() => void) | null = null;
-    engine
-      .init(canvas)
-      .then((s) => live && setStatus(s))
-      .catch((err) => {
+    void (async () => {
+      await heroSettled;
+      if (!live) return;
+      try {
+        const [{ Engine }, { pageStages }] = await Promise.all([import('./gl/Engine'), import('./gl/stages')]);
+        if (!live) return;
+        // a fresh canvas per engine: StrictMode mounts twice, and a GPU context cannot be re-owned
+        canvas = document.createElement('canvas');
+        canvas.className = 'gl';
+        host.current!.appendChild(canvas);
+        engine = new Engine(pageStages);
+        const s = await engine.init(canvas);
+        if (live) setStatus(s);
+      } catch (err) {
         console.error('renderer failed', err);
         if (!live) return;
         setStatus('failed');
         stopDom = startDomLoop();
-      });
+      }
+    })();
     return () => {
       live = false;
       stopDom?.();
-      engine.dispose();
-      canvas.remove();
+      engine?.dispose();
+      canvas?.remove();
     };
   }, []);
 

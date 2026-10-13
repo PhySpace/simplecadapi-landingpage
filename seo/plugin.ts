@@ -1,3 +1,4 @@
+import { readFileSync, rmSync } from 'node:fs';
 import type { Plugin } from 'vite';
 import { ASSEMBLY, CLOSE, CODE, COMPOSE, HERO, PARAMS, SELECT, SIM, VERIFY } from '../src/content';
 import { DOCS_URL, GITHUB_REPO, GITHUB_URL, PAPER_URL, PYPI_URL } from '../src/style/tokens';
@@ -93,6 +94,25 @@ export function structuredData(): string {
   return JSON.stringify({ '@context': 'https://schema.org', '@graph': graph });
 }
 
+/**
+ * <link rel="preload"> for the hero's first picture: the index, the still frame and the first loop
+ * (from public/hero, written by the capture). They start downloading with the page, in parallel
+ * with the script, and the hero takes the preloaded responses.
+ */
+export function heroPreloads(): string {
+  try {
+    const index = JSON.parse(readFileSync('public/hero/index.json', 'utf8')) as { products: { poster: string; gif: string }[] };
+    const first = index.products[0];
+    return (
+      '<link rel="preload" as="fetch" href="/hero/index.json" crossorigin fetchpriority="high" />' +
+      `<link rel="preload" as="image" href="/hero/${first.poster}" fetchpriority="high" />` +
+      `<link rel="preload" as="image" href="/hero/${first.gif}" fetchpriority="high" />`
+    );
+  } catch {
+    return ''; // the loops have not been captured: nothing to preload
+  }
+}
+
 export function sitemap(date: string): string {
   return (
     '<?xml version="1.0" encoding="UTF-8"?>\n' +
@@ -106,8 +126,12 @@ export function seoPlugin(): Plugin {
   return {
     name: 'sca-seo',
     transformIndexHtml(html) {
-      const head = `${STYLE}<script type="application/ld+json">${structuredData()}</script>`;
+      const head = `${heroPreloads()}${STYLE}<script type="application/ld+json">${structuredData()}</script>`;
       return html.replace('</head>', `${head}\n  </head>`).replace('<div id="root"></div>', `<div id="root">${staticContent()}</div>`);
+    },
+    // the live hero scene's meshes are only used to capture the loops (npm run dev): not shipped
+    closeBundle() {
+      rmSync('dist/geometry/showcase', { recursive: true, force: true });
     },
     generateBundle() {
       this.emitFile({ type: 'asset', fileName: 'sitemap.xml', source: sitemap(new Date().toISOString().slice(0, 10)) });
