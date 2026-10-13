@@ -17,7 +17,7 @@ import {
   simField,
   verifyPhase,
 } from '../timelines';
-import { Chapter, Code, CodeLine, Copy, Heading, Install, Panel, fmt } from './common';
+import { Chapter, Code, CodeLine, Copy, Heading, Install, Panel, PromptCopy, fmt } from './common';
 
 /** scroll progress of a chapter at 0.25 % resolution */
 const useProgress = (id: Parameters<typeof useChapterStep>[0]) => useChapterStep(id, 400) / 400;
@@ -66,6 +66,7 @@ export const Hero: React.FC = () => {
         ))}
       </h1>
       <p className="body">{HERO.body}</p>
+      <PromptCopy prompt={HERO.prompt} label="Paste this to your coding agent" />
       <div className="ctas">
         <Install command={HERO.install} />
         <a className="btn" href={GITHUB_URL} target="_blank" rel="noreferrer">

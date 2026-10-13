@@ -11,6 +11,8 @@ export const HERO = {
     'dimension a named parameter, every step verified. The model does the operations. ' +
     'You keep the intent.',
   install: 'pip install simplecadapi',
+  // What the visitor pastes to their coding agent: the agent reads the file and does the rest.
+  prompt: 'Read physpace.dev/sca/landing.md and landing me on this sdk.',
 };
 
 export interface ChapterCopy {
