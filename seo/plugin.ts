@@ -1,3 +1,4 @@
+import { readFileSync } from 'node:fs';
 import type { Plugin } from 'vite';
 import { ASSEMBLY, CLOSE, CODE, COMPOSE, HERO, PARAMS, SELECT, SIM, VERIFY } from '../src/content';
 import { DOCS_URL, GITHUB_REPO, GITHUB_URL, PAPER_URL, PYPI_URL } from '../src/style/tokens';
@@ -93,6 +94,27 @@ export function structuredData(): string {
   return JSON.stringify({ '@context': 'https://schema.org', '@graph': graph });
 }
 
+/**
+ * <link rel="preload"> for the hero's first model (index and the first product's files, read from
+ * public/geometry/showcase at build time). They start downloading with the page, in parallel with
+ * the script, instead of after it has run; fetch() later takes the preloaded responses.
+ */
+export function heroPreloads(): string {
+  try {
+    const root = 'public/geometry/showcase';
+    const index = JSON.parse(readFileSync(`${root}/index.json`, 'utf8')) as { products: { key: string; instances: { asset: string }[] }[] };
+    const first = index.products[0];
+    const hrefs = ['/geometry/showcase/index.json'];
+    for (const name of new Set(first.instances.map((instance) => instance.asset))) {
+      const doc = JSON.parse(readFileSync(`${root}/${first.key}/${name}.json`, 'utf8')) as { bin: string };
+      hrefs.push(`/geometry/showcase/${first.key}/${name}.json`, `/geometry/showcase/${first.key}/${doc.bin}`);
+    }
+    return hrefs.map((href) => `<link rel="preload" as="fetch" href="${href}" crossorigin fetchpriority="high" />`).join('');
+  } catch {
+    return ''; // no geometry exported: nothing to preload
+  }
+}
+
 export function sitemap(date: string): string {
   return (
     '<?xml version="1.0" encoding="UTF-8"?>\n' +
@@ -106,7 +128,7 @@ export function seoPlugin(): Plugin {
   return {
     name: 'sca-seo',
     transformIndexHtml(html) {
-      const head = `${STYLE}<script type="application/ld+json">${structuredData()}</script>`;
+      const head = `${heroPreloads()}${STYLE}<script type="application/ld+json">${structuredData()}</script>`;
       return html.replace('</head>', `${head}\n  </head>`).replace('<div id="root"></div>', `<div id="root">${staticContent()}</div>`);
     },
     generateBundle() {

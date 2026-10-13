@@ -35,6 +35,18 @@ export abstract class Stage {
   private loading: Promise<void> | null = null;
   ready = false;
 
+  /** whether `load()` has been asked for */
+  get started() {
+    return this.loading !== null;
+  }
+
+  /** Background work after `load()` (more products, more parts), done one unit at a time
+   * by the Engine, nearest chapter first. */
+  workLeft(): boolean {
+    return false;
+  }
+  async doWork(): Promise<void> {}
+
   /** build the scene; called once */
   protected abstract setup(): Promise<void>;
   /** pose from this frame's scroll state */

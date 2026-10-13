@@ -49,18 +49,42 @@ export class Engine {
     return this.status;
   }
 
-  /** load the chapter in view first, then the rest in page order */
+  /**
+   * Download in order of what the visitor is looking at. The hero's first model comes first,
+   * alone. After it, one unit of work at a time (a stage, or one more product of the hero):
+   * the chapter on screen first, then the nearest ones, those below before those above.
+   * Scrolling re-orders what is still waiting, because the choice is made again after every unit.
+   */
   private async preload() {
-    const order = [...CHAPTERS].sort((a, b) => frames[b].visible - frames[a].visible);
-    for (const id of order) {
-      const s = this.stages.get(id);
-      if (!s) continue;
-      try {
-        await s.load();
-      } catch (err) {
-        console.error(`stage ${id} failed to load`, err);
-      }
+    const hero = this.stages.get('hero');
+    if (hero) await this.run(() => hero.load());
+    for (;;) {
+      const next = this.nextWork();
+      if (!next) break;
+      await this.run(next);
     }
+  }
+
+  private async run(work: () => Promise<void>) {
+    try {
+      await work();
+    } catch (err) {
+      console.error('loading failed', err);
+    }
+  }
+
+  private nextWork(): (() => Promise<void>) | null {
+    const current = CHAPTERS.reduce((best, id) => (frames[id].visible > frames[best].visible ? id : best), 'hero' as ChapterId);
+    const at = CHAPTERS.indexOf(current);
+    let best: { rank: number; work: () => Promise<void> } | null = null;
+    for (const [id, stage] of this.stages) {
+      const work = !stage.started ? () => stage.load() : stage.workLeft() ? () => stage.doWork() : null;
+      if (!work) continue;
+      const d = CHAPTERS.indexOf(id) - at;
+      const rank = Math.abs(d) + (d < 0 ? 0.5 : 0);
+      if (!best || rank < best.rank) best = { rank, work };
+    }
+    return best ? best.work : null;
   }
 
   private resize = () => {

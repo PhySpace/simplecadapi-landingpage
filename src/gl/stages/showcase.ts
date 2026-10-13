@@ -3,6 +3,7 @@ import { loadCad } from '../cad';
 import { CadObject } from '../CadObject';
 import { FrameInput, Stage } from '../Stage';
 import { ShowcaseIndex, ShowcaseProduct, loadJson } from '../../data';
+import type { Priority } from '../cad';
 import { lerp, smooth } from '../../math';
 
 const HOLD = 4.6;
@@ -50,6 +51,8 @@ interface Shown {
 export class ShowcaseStage extends Stage {
   readonly id = 'hero' as const;
   private shown: (Shown | null)[] = [];
+  /** products still to load, smallest first: the rest of the rotation fills in behind the first */
+  private queue: number[] = [];
   private clock = 0;
   private current = 0;
   private next = -1;
@@ -58,22 +61,34 @@ export class ShowcaseStage extends Stage {
   private fadeHold = HOLD;
 
   protected async setup() {
-    const idx = await loadJson<ShowcaseIndex>('geometry/showcase/index.json');
+    const idx = await loadJson<ShowcaseIndex>('geometry/showcase/index.json', 'high');
     showcase.products = idx.products;
     this.shown = idx.products.map(() => null);
-    await this.build(0);
+    // the first product alone, at high priority: it is what the visitor is looking at
+    await this.build(0, 'high');
     this.frameProduct(idx.products[0]);
     showcase.emit();
-    // the rest load in the background, in order
-    void (async () => {
-      for (let i = 1; i < idx.products.length; i++) await this.build(i).catch(console.error);
-    })();
+    // the others follow one at a time, small ones first (the heavy assemblies last)
+    this.queue = idx.products
+      .map((p, i) => ({ p, i }))
+      .filter(({ i }) => i > 0)
+      .sort((a, b) => a.p.assets - b.p.assets || a.p.instances.length - b.p.instances.length)
+      .map(({ i }) => i);
   }
 
-  private async build(i: number) {
+  workLeft() {
+    return this.queue.length > 0;
+  }
+
+  async doWork() {
+    const i = this.queue.shift();
+    if (i !== undefined) await this.build(i, 'low').catch(console.error);
+  }
+
+  private async build(i: number, priority: Priority) {
     const p = showcase.products[i];
     const names = [...new Set(p.instances.map((x) => x.asset))];
-    const assets = new Map(await Promise.all(names.map(async (n) => [n, await loadCad(`showcase/${p.key}/${n}`)] as const)));
+    const assets = new Map(await Promise.all(names.map(async (n) => [n, await loadCad(`showcase/${p.key}/${n}`, priority)] as const)));
     const group = new THREE.Group();
     const centre = new THREE.Vector3().fromArray(p.bounds.center);
     const base: THREE.Matrix4[] = [];
