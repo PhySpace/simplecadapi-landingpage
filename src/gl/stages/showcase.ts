@@ -3,8 +3,14 @@ import { loadCad } from '../cad';
 import { CadObject } from '../CadObject';
 import { FrameInput, Stage } from '../Stage';
 import { ShowcaseIndex, ShowcaseProduct, loadJson } from '../../data';
+import { showcase } from '../../hero';
 import type { Priority } from '../cad';
 import { lerp, smooth } from '../../math';
+
+/** capture: a part turns once per loop, an assembly runs one assemble/explode/close cycle */
+export const LOOP_PART = 9;
+export const LOOP_ASSEMBLY = 6.4;
+export const loopSeconds = (kind: 'part' | 'assembly') => (kind === 'assembly' ? LOOP_ASSEMBLY : LOOP_PART);
 
 const HOLD = 4.6;
 /** assemblies stay longer: they assemble, explode, hold, and close again */
@@ -15,26 +21,6 @@ const EXPLODE = 0.7;
 
 /** 0 assembled .. 1 exploded over one assembly hold */
 const explodeAt = (t: number) => smooth(t, 0.9, 2.1) * (1 - smooth(t, 4.2, 5.4));
-
-/** which product the hero shows; the DOM label and chips read and drive it */
-export const showcase = {
-  index: 0,
-  products: [] as ShowcaseProduct[],
-  /** products whose meshes are loaded */
-  loaded: new Set<number>(),
-  listeners: new Set<() => void>(),
-  version: 0,
-  emit() {
-    this.version++;
-    this.listeners.forEach((l) => l());
-  },
-  subscribe(l: () => void) {
-    showcase.listeners.add(l);
-    return () => showcase.listeners.delete(l);
-  },
-  /** jump to product i (a click on its chip) */
-  request: -1,
-};
 
 interface Shown {
   group: THREE.Group;
@@ -53,6 +39,8 @@ export class ShowcaseStage extends Stage {
   private shown: (Shown | null)[] = [];
   /** products still to load, smallest first: the rest of the rotation fills in behind the first */
   private queue: number[] = [];
+  /** capture mode: pose product `index` at `t` seconds into its loop (no transitions, no pointer) */
+  capture: { index: number; t: number } | null = null;
   private clock = 0;
   private current = 0;
   private next = -1;
@@ -137,7 +125,37 @@ export class ShowcaseStage extends Stage {
     return showcase.products[this.current]?.kind === 'assembly' ? HOLD_ASSEMBLY : HOLD;
   }
 
+  private updateCapture(f: FrameInput, index: number, t: number) {
+    const s = this.shown[index];
+    if (!s) return;
+    this.current = index;
+    this.next = -1;
+    this.clock = t;
+    const kind = s.product.kind;
+    const e = kind === 'assembly' ? explodeAt(t) : 0;
+    this.shown.forEach((x, i) => {
+      if (x) x.group.visible = i === index;
+    });
+    s.objs.forEach((o, k) => {
+      o.reveal = f.visible * (s.shell[k] ? 1 - smooth(e, 0, 0.6) : 1);
+      const d = s.away[k];
+      o.group.matrix.copy(s.base[k]).premultiply(this.shift.makeTranslation(d.x * e * EXPLODE, d.y * e * EXPLODE, d.z * e * EXPLODE));
+    });
+    this.frameProduct(s.product);
+    this.radius = s.product.bounds.radius * (1 + 0.55 * e * EXPLODE);
+    // a full turn over the loop for a part; a gentle sway for an assembly, which also explodes
+    const phase = (2 * Math.PI * t) / loopSeconds(kind);
+    this.azimuth = 0.6 + (kind === 'assembly' ? 0.45 * Math.sin(phase) : phase);
+    this.elevation = 0.5;
+  }
+
+  /** every product's meshes are loaded (capture waits for this) */
+  allLoaded() {
+    return this.shown.length > 0 && this.shown.every(Boolean);
+  }
+
   update(f: FrameInput) {
+    if (this.capture) return this.updateCapture(f, this.capture.index, this.capture.t);
     this.clock += f.dt;
     const HOLD = this.hold();
     // a chip click waits for a running fade to finish, then cuts straight to its product

@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { fetchJson, type Priority } from './gl/cad';
+import { fetchJson, type Priority } from './net';
 
 /** pipeline/export_flange.py index */
 export interface FlangeIndex {

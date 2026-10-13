@@ -103,11 +103,15 @@ export class Engine {
     const now = performance.now();
     const dt = Math.min(0.1, (now - this.last) / 1000);
     this.last = now;
+    this.draw((now - this.start) / 1000, dt);
+  };
+
+  /** Draw one frame at `time` seconds (the animation loop, or a capture stepping time itself). */
+  draw(time: number, dt: number) {
     measure();
     const r = this.renderer;
     r.setScissorTest(false);
     r.clear();
-    const time = (now - this.start) / 1000;
     const { w: W, h: H } = this.view;
     // the brand ripple runs out of the page's top-right corner while the hero is up
     if (this.backdrop && frames.hero.visible > 0.001) {
@@ -137,7 +141,12 @@ export class Engine {
     }
     r.setScissorTest(false);
     r.setViewport(0, 0, W, H);
-  };
+  }
+
+  /** stop the animation loop (a capture draws frames itself) */
+  stopLoop() {
+    this.renderer.setAnimationLoop(null);
+  }
 
   dispose() {
     window.removeEventListener('resize', this.resize);

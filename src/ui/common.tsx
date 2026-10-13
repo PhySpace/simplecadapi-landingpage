@@ -10,7 +10,7 @@ export const Chapter: React.FC<{
   id: ChapterId;
   length: number;
   className?: string;
-  viewport?: { label: React.ReactNode; right?: React.ReactNode; foot?: React.ReactNode };
+  viewport?: { label: React.ReactNode; right?: React.ReactNode; foot?: React.ReactNode; body?: React.ReactNode };
   children: React.ReactNode;
 }> = ({ id, length, className, viewport, children }) => {
   const ref = useCallback((el: HTMLElement | null) => registerChapter(id, el), [id]);
@@ -27,11 +27,12 @@ export const Chapter: React.FC<{
 };
 
 /** the card the chapter's stage renders into (the GL canvas is scissored to its body) */
-export const Viewport: React.FC<{ id: ChapterId; label: React.ReactNode; right?: React.ReactNode; foot?: React.ReactNode }> = ({
+export const Viewport: React.FC<{ id: ChapterId; label: React.ReactNode; right?: React.ReactNode; foot?: React.ReactNode; body?: React.ReactNode }> = ({
   id,
   label,
   right,
   foot,
+  body,
 }) => {
   const ref = useCallback((el: HTMLElement | null) => registerViewport(id, el), [id]);
   const v = useChapterVisible(id, 8);
@@ -42,6 +43,7 @@ export const Viewport: React.FC<{ id: ChapterId; label: React.ReactNode; right?:
         {right !== undefined && <span>{right}</span>}
       </figcaption>
       <div className="vp-body" ref={ref}>
+        {body}
         <i className="vp-mark tl" />
         <i className="vp-mark tr" />
         <i className="vp-mark bl" />

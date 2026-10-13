@@ -2,14 +2,15 @@ import React, { useSyncExternalStore } from 'react';
 import { ASSEMBLY, CLOSE, CODE, COMPOSE, HERO, PARAMS, SELECT, SIM, VERIFY } from '../content';
 import { BldcIndex, FieldIndex, FilletError, FlangeIndex, FourbarIndex, useJson } from '../data';
 import { CadDoc } from '../gl/cad';
-import { showcase } from '../gl/stages/showcase';
-import { LOAD_CASE_TAGS, exaggeration } from '../gl/stages/sim';
+import { jumpTo, showcase } from '../hero';
 import { useChapterStep } from '../scroll';
 import { DOCS_URL, FEM_RAMP, GITHUB_URL, PAPER_URL, PYPI_URL } from '../style/tokens';
 import {
   COMPOSE_LINKS,
+  LOAD_CASE_TAGS,
   codeStage,
   composeActive,
+  exaggeration,
   explode,
   paramsStep,
   selectStep,
@@ -18,6 +19,7 @@ import {
   verifyPhase,
 } from '../timelines';
 import { Chapter, Code, CodeLine, Copy, Heading, Install, Panel, PromptCopy, fmt } from './common';
+import { HeroLoop } from './HeroLoop';
 
 /** scroll progress of a chapter at 0.25 % resolution */
 const useProgress = (id: Parameters<typeof useChapterStep>[0]) => useChapterStep(id, 400) / 400;
@@ -37,7 +39,7 @@ export const Hero: React.FC = () => {
           type="button"
           className={i === showcase.index ? 'on' : ''}
           disabled={!showcase.loaded.has(i)}
-          onClick={() => (showcase.request = i)}
+          onClick={() => jumpTo(i)}
         >
           {x.title}
         </button>
@@ -53,6 +55,7 @@ export const Hero: React.FC = () => {
       label: p ? p.notebook.replace(/^examples\/[^/]+\//, '') : 'loading models',
       right: p ? (p.kind === 'assembly' ? `assembly · ${p.parts} parts` : 'part') : '',
       foot,
+      body: <HeroLoop />,
     }}
   >
     <Copy id="hero">

@@ -1,8 +1,10 @@
 import * as THREE from 'three/webgpu';
 import { LineSegmentsGeometry } from 'three/addons/lines/LineSegmentsGeometry.js';
 
-/** Asset base: everything under public/ */
-export const asset = (path: string) => `${import.meta.env.BASE_URL}${path}`;
+import { asset, fetchBuffer, fetchJson, type Priority } from '../net';
+
+export { asset, fetchBuffer, fetchJson };
+export type { Priority };
 
 type BufType = 'f32' | 'u32' | 'u16' | 'i16' | 'i8' | 'u8';
 
@@ -105,21 +107,6 @@ const build = (key: string, doc: CadDoc, buf: ArrayBuffer): CadAsset => {
   lines.setIndex(new THREE.BufferAttribute(indices(buf, doc.buffers.lineIndices), 1));
   return { key, doc, mesh, lines, centroids };
 };
-
-/** How urgently a download is wanted: `high` for what is on screen now, `low` for what is
- * only being prepared in the background. The browser may ignore it. */
-export type Priority = 'high' | 'low' | 'auto';
-
-const fetchOk = async (url: string, priority: Priority = 'auto') => {
-  const r = await fetch(url, priority === 'auto' ? undefined : { priority });
-  if (!r.ok) throw new Error(`${url}: ${r.status}`);
-  return r;
-};
-
-export const fetchJson = async <T,>(path: string, priority: Priority = 'auto'): Promise<T> =>
-  (await fetchOk(asset(path), priority)).json() as Promise<T>;
-export const fetchBuffer = async (path: string, priority: Priority = 'auto') =>
-  (await fetchOk(asset(path), priority)).arrayBuffer();
 
 const cache = new Map<string, Promise<CadAsset>>();
 
